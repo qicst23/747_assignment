@@ -120,7 +120,7 @@ class sequence_to_sequence(SaveableModel):
      self.num_hidden = num_hidden
      self.model = model
      self.current_RNN = dy.LSTMBuilder(self.num_layers, self.num_input, self.num_hidden, self.model)
-     self.next_RNN = dy.LSTMBuilder(self.num_layers, self.num_input, self.num_hidden, self.model)
+     self.next_RNN = dy.LSTMBuilder(self.num_layers, self.num_hidden, self.num_hidden, self.model)
      self.nwords = nwords
      self.vw = vw
      self.add_params()
