@@ -10,9 +10,9 @@ import random
 
 src_file = '../data/sequence_pairs_src.txt'
 tgt_file = '../data/sequence_pairs_tgt.txt'
-num_hidden = 128
-num_input = 128
-num_layers = 1
+num_hidden = 256
+num_input = 256
+num_layers = 2
 num_epochs = 50
 early_save = 1
 
@@ -79,16 +79,15 @@ for ITER in xrange(50):
         if i % 10000 == 0 or i == len(train)-1:
             dev_loss = dev_words = 0
             for sent in valid:
-                loss_exp, pred = seq2seq.calculate_mostimportant_loss_return(sent[0], sent[1])
+                loss_exp = seq2seq.calculate_mostimportant_loss(sent[0], sent[1])
                 dev_loss += loss_exp.scalar_value()
                 dev_words += len(sent[0])
             print dev_loss / dev_words
-            print pred, sent[1]
             # Save the model
             seq2seq.save('models_seq2imp')
             print "Saved model"
         # train on sent
-        loss_exp, pred = seq2seq.calculate_mostimportant_loss_return(s[0], s[1])
+        loss_exp = seq2seq.calculate_mostimportant_loss(s[0], s[1])
         cum_loss += loss_exp.scalar_value()
         num_tagged += len(s[0])
         loss_exp.backward()
@@ -96,7 +95,6 @@ for ITER in xrange(50):
         if early_save == 1:
            seq2seq.save('models_seq2imp')
            print "Saved after first example"
-           print pred, s[1]
            early_save =0 
     print "epoch %r finished" % ITER
     trainer.update_epoch(1.0)
