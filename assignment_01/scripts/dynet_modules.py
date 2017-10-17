@@ -215,7 +215,93 @@ class sequence_to_sequence(SaveableModel):
         losses.append(loss)
         s = s.add_input(self.lookup[wid])  
       return dy.esum(losses)
+
+   def calculate_mostimportant_loss(self, current_sequence, next_sequence):
+
+      # Renew the computation graph
+      dy.renew_cg()
+
+      # Initialize the current RNN
+      f_init = self.current_RNN.initial_state()
+
+      # Initialize the parameters
+      W_exp = dy.parameter(self.W_sm)
+      b_exp = dy.parameter(self.b_sm)
+
+      # Get the ids for ICD codes
+      wids_current = [self.vw.w2i[w] for w in current_sequence]
+
+      # Start the RNN
+      s = f_init.add_input(dy.lookup(self.lookup, wids_current[-1]))
+
+      # Feed the vectors into the current RNN and predict the next code
+      losses = []
+      for wid in wids_current:
+        #score = W_exp * s.output() + b_exp
+        #loss = dy.pickneglogsoftmax(score, wid)
+        #losses.append(loss)
+        s = s.add_input(self.lookup[wid])
+
+
+      #self.next_RNN.initial_state().add_input(s)
+      # Initialize the next RNN
+      s_next = self.next_RNN.initial_state().add_input(s.output())
+
+      # Get the ids for ICD codes
+      wids_next = [self.vw.w2i[w] for w in next_sequence]
+
+      # Feed the vectors into the next RNN and predict the next codes
+      wid = wids_next[0]
+      score = W_exp * s_next.output() + b_exp
+      loss = dy.pickneglogsoftmax(score, wid)
+      losses.append(loss)
+      s = s.add_input(self.lookup[wid])
+      return dy.esum(losses)
   
+   def calculate_mostimportant_loss_return(self, current_sequence, next_sequence):
+
+      # Renew the computation graph
+      dy.renew_cg()
+
+      # Initialize the current RNN
+      f_init = self.current_RNN.initial_state()
+
+      # Initialize the parameters
+      W_exp = dy.parameter(self.W_sm)
+      b_exp = dy.parameter(self.b_sm)
+
+      # Get the ids for ICD codes
+      wids_current = [self.vw.w2i[w] for w in current_sequence]
+
+      # Start the RNN
+      s = f_init.add_input(dy.lookup(self.lookup, wids_current[-1]))
+
+      # Feed the vectors into the current RNN and predict the next code
+      losses = []
+      for wid in wids_current:
+        #score = W_exp * s.output() + b_exp
+        #loss = dy.pickneglogsoftmax(score, wid)
+        #losses.append(loss)
+        s = s.add_input(self.lookup[wid])
+
+
+      #self.next_RNN.initial_state().add_input(s)
+      # Initialize the next RNN
+      s_next = self.next_RNN.initial_state().add_input(s.output())
+
+      # Get the ids for ICD codes
+      wids_next = [self.vw.w2i[w] for w in next_sequence]
+
+      # Feed the vectors into the next RNN and predict the next codes
+      wid = wids_next[0]
+      score = W_exp * s_next.output() + b_exp
+      loss = dy.pickneglogsoftmax(score, wid)
+      losses.append(loss)
+      picked = np.argmax(dy.softmax(score).npvalue())
+      s = s.add_input(self.lookup[wid])
+      return dy.esum(losses), picked
+
+
 
 class Vocab:
 
