@@ -50,7 +50,7 @@ class language_model(SaveableModel):
 
    def save(self, path):
      if not os.path.exists(path): os.makedirs(path)
-     arr = [ self.num_layers, self.num_input, self.num_hidden, self.W_sm, self.b_sm ]
+     arr = [ self.num_layers, self.num_input, self.num_hidden, self.nwords, self.vw ]
      self.model.save(path + '/model')
      with open(path + '/model_hyps', 'w') as f: pickle.dump(arr, f) 
 
@@ -66,8 +66,8 @@ class language_model(SaveableModel):
       self.num_layers = arr[0]
       self.num_input = arr[1]
       self.num_hidden = arr[2]
-      self.W_sm = arr[3]
-      self.b_sm = arr[4]
+      self.nwords = arr[3]
+      self.vw= arr[4]
 
    def load_copy(self, model, path):
        if not os.path.exists(path): raise Exception("Model "+path+" does not exist")

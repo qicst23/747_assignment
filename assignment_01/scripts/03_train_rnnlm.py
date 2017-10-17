@@ -13,6 +13,7 @@ num_hidden = 128
 num_input = 128
 num_layers = 1
 num_epochs = 50
+early_save = 1
 
 def read(fname):
     """
@@ -64,14 +65,14 @@ num_tagged = cum_loss = 0
 for ITER in xrange(50):
     random.shuffle(train)
     for i,s in enumerate(train,1):
-        if i % 500 == 0:
+        if i % 1000 == 0:
             trainer.status()
             print cum_loss / num_tagged , " processed ", i , " of ", len(train)
             cum_loss = 0
             num_tagged = 0
         if i % 10000 == 0 or i == len(train)-1:
             dev_loss = dev_words = 0
-            for sent in test:
+            for sent in valid:
                 loss_exp = rnnlm.calculate_LM_loss(sent)
                 dev_loss += loss_exp.scalar_value()
                 dev_words += len(sent)
@@ -85,6 +86,10 @@ for ITER in xrange(50):
         num_tagged += len(s)
         loss_exp.backward()
         trainer.update()
+        if early_save == 1:
+           rnnlm.save('models')
+           print "Saved after first example"
+           early_save =0 
     print "epoch %r finished" % ITER
     trainer.update_epoch(1.0)
 
