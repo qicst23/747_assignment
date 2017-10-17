@@ -10,8 +10,8 @@ import random
 
 src_file = '../data/sequence_pairs_src.txt'
 tgt_file = '../data/sequence_pairs_tgt.txt'
-num_hidden = 128
-num_input = 128
+num_hidden = 64
+num_input = 256
 num_layers = 1
 num_epochs = 50
 early_save = 1
@@ -24,6 +24,11 @@ def read(fname):
     with file(fname) as fh:
         for line in fh:
             sent = line.strip().split()
+            # Keep only the first 3 characters
+            for (a,k) in enumerate(sent):
+                q = str(k).strip('"').strip("'")
+                #print q
+                sent[a] = q[0:3]
             sent.append("<s>")
             yield sent
 
@@ -61,7 +66,7 @@ nwords = vw.size()
 
 
 model = dy.Model()
-trainer = dy.AdamTrainer(model)
+trainer = dy.SimpleSGDTrainer(model)
 seq2seq = sequence_to_sequence(num_layers, num_input, num_hidden, model, nwords, vw)
 
 
@@ -78,6 +83,7 @@ for ITER in xrange(50):
             num_tagged = 0
         if i % 10000 == 0 or i == len(train)-1:
             dev_loss = dev_words = 0
+            random.shuffle(valid)
             for sent in valid:
                 loss_exp, pred = seq2seq.calculate_mostimportant_loss_return(sent[0], sent[1])
                 dev_loss += loss_exp.scalar_value()
