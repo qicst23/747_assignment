@@ -2,6 +2,7 @@
 
 import numpy as np
 import dynet as dy
+import sys
 from dynet_modules import sequence_to_sequence
 from utils import Vocab
 from collections import Counter, defaultdict
@@ -10,11 +11,12 @@ import random
 
 src_file = '../data/sequence_pairs_src.txt'
 tgt_file = '../data/sequence_pairs_tgt.txt'
-num_hidden = 32
+num_hidden = int(sys.argv[2])
 num_input = 16
-num_layers = 4
+num_layers = 2
 num_epochs = 50
 early_save = 1
+num_codes = int(sys.argv[1])
 
 def read(fname):
     """
@@ -72,7 +74,7 @@ seq2seq = sequence_to_sequence(num_layers, num_input, num_hidden, model, nwords,
 
 
 # Have fun
-
+print "  TRAINING WITH codes: ", num_codes, " and hidden size: " , num_hidden
 num_tagged = cum_loss = 0
 for ITER in xrange(50):
     random.shuffle(train)
@@ -86,7 +88,7 @@ for ITER in xrange(50):
             dev_loss = dev_words = 0
             random.shuffle(valid)
             for sent in valid:
-                loss_exp, pred = seq2seq.calculate_mostimportant_loss_return_firstN(sent[0], sent[1])
+                loss_exp, pred = seq2seq.calculate_mostimportant_loss_return_firstN(sent[0], sent[1], num_codes)
                 dev_loss += loss_exp.scalar_value()
                 dev_words += len(sent[0])
             print dev_loss / dev_words
@@ -95,7 +97,7 @@ for ITER in xrange(50):
             seq2seq.save('models_seq2imp')
             print "Saved model"
         # train on sent
-        loss_exp, pred = seq2seq.calculate_mostimportant_loss_return_firstN(s[0], s[1])
+        loss_exp, pred = seq2seq.calculate_mostimportant_loss_return_firstN(s[0], s[1], num_codes)
         cum_loss += loss_exp.scalar_value()
         num_tagged += len(s[0])
         loss_exp.backward()
