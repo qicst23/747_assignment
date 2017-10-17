@@ -3,7 +3,8 @@ Repo to hold 747 assignment and project.
 
 To train the latest models,
 
-cd assignment_01/scripts \n
+cd assignment_01/scripts and run
+
 sh train.sh
 
 train.sh basically runs the training with
