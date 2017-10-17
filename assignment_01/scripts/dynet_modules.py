@@ -11,12 +11,12 @@ class SaveableModel(object):
 
    def save(self, path):
      if not os.path.exists(path): os.makedirs(path)
-     self.model.save(path + "/params")
+     self.model.save(path, '/model')
 
    @staticmethod
    def load(model, path, load_model_params=True):
       if not os.path.exists(path): raise Exception("Model "+path+" does not exist")
-      with open(path+"/params", "r") as f: self.model = pickle.load(f)
+      with open(path + '/model', "r") as f: self.model = pickle.load(f)
       return self.model
 
 class language_model(SaveableModel):
@@ -37,8 +37,8 @@ class language_model(SaveableModel):
    def save(self, path):
      if not os.path.exists(path): os.makedirs(path)
      arr = [ self.num_layers, self.num_input, self.num_hidden ]
-     self.model.save(path)
-     with open(path + '_hyps', 'w') as f: pickle.dump(arr, f) 
+     self.model.save(path + '/model')
+     with open(path + '/model_hyps', 'w') as f: pickle.dump(arr, f) 
 
    def print_params(self):
       print self.num_layers
@@ -46,14 +46,24 @@ class language_model(SaveableModel):
       print self.num_hidden
 
    def load_model(self, model, path):
-      model = load(model, path)
+      model.populate(path + '/model')
+      with open(path+"/model_hyps", "r") as f: arr = pickle.load(f)
       self.model = model
+      self.num_layers = arr[0]
+      self.num_input = arr[1]
+      self.num_hidden = arr[2]
+
+   def load_copy(self, model, path):
+       if not os.path.exists(path): raise Exception("Model "+path+" does not exist")
+       with open(path+"/model_hyps", "r") as f: arr = pickle.load(f)
+       model.populate(path + '/model')
+       return model
 
    @staticmethod
    def load(model, path):
        if not os.path.exists(path): raise Exception("Model "+path+" does not exist")
-       with open(path+"_hyps", "r") as f: arr = pickle.load(f)
-       model.populate(path)
+       with open(path+"/model_hyps", "r") as f: arr = pickle.load(f)
+       model.populate(path + '/model')
        return model
    
    def calculate_LM_loss(sequence):
@@ -73,7 +83,7 @@ A.print_params()
 
 m2 = dy.Model()
 B = language_model(1,128,256,m2)
-B.load(m2, 'test_LM.save')
+B.load_model(m, 'test_LM.save')
 B.print_params()
 
 
