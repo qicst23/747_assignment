@@ -1,0 +1,78 @@
+#!/usr/bin/python
+
+import os, sys
+import csv
+
+debug = 1
+
+diagnosis_file = '../../data/mimic3/mimic/mimic-code/data/DIAGNOSES_ICD.csv'
+noteevents_file = '../../data/mimic3/mimic/mimic-code/data/NOTEEVENTS.csv' 
+
+#"ROW_ID","SUBJECT_ID","HADM_ID","SEQ_NUM","ICD9_CODE"
+subject_id_array = []
+admission_id_array = []
+sequence_num_array = []
+icd_code_array = []
+with open(diagnosis_file , 'r') as f:
+    lines = f.readlines()
+    for line  in lines[1:]:
+        row = line.split('\n')[0]
+        subject_id_array.append(row.split(',')[1])
+        admission_id_array.append(row.split(',')[2])
+        sequence_num_array.append(row.split(',')[3])
+        icd_code_array.append(row.split(',')[4])
+
+# For every subject, create a folder
+admission_count = 0
+admission_previous = ' '
+subject_previous = ' ' 
+for (count, subject) in enumerate(subject_id_array):
+   if subject == "11897":
+     debug = 1
+   else:
+     debug = 0
+   if debug :
+      print "Processing the subject ", subject
+   path = '../data_parsed/' + subject
+   admission_id = admission_id_array[count]
+   if debug:
+      print "Admission ID ", admission_id
+   if admission_id == admission_previous and subject == subject_previous:
+       pass
+   elif subject == subject_previous and admission_id != admission_previous:   # Same patient but new visit
+       admission_count += 1
+       admission_previous = admission_id
+   elif subject != subject_previous:
+       admission_count = 0
+       subject_previous = subject
+       admission_previous = admission_id
+   icd_code = icd_code_array[count]
+   if not os.path.exists(path):
+      os.makedirs(path)
+   text_file = path + '/' + str(admission_count).zfill(4) + '_' + admission_id + '.codes' 
+   with open(text_file ,'a') as g:
+       g.write(icd_code + '\n')
+      
+   
+subject_id_array = []
+admission_id_array = []
+text_array = []
+with open(noteevents_file, 'r') as f:
+    lines = f.readlines()
+    for line  in lines[1:]:
+        
+        row = line.split('\n')[0]
+        print "Row: ", row
+        subject_id_array.append(row.split(',')[1])
+        admission_id_array.append(row.split(',')[2])
+        text_array.append(row.split(',')[-1])
+
+# For every subject, update the text
+
+for (subject, admission, text) in zip(subject_id_array, admission_id_array, text_array):
+      path = '../data_parsed/' + subject
+      text_file = path + '/' +  admission + '.noteevents'
+      with open(text_file ,'a') as g:
+        g.write(text + '\n')
+
+      
