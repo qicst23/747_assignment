@@ -21,3 +21,8 @@ Experiment configs available:
 2) Training the medical codes of current visit to predict the medical codes in the next visit - 06_train_seq2seq.py  
 3) Training the medical codes of current visit to predict the most important disease code in the next visit ( similar to Machine Translation ) - 07_train_seq2imp_printprediction.py  
 4) Training on the first N medical codes of current visit to predict the most important disease code in the next visit - 08_train_seq2imp_printprediction_firstN.py
+
+
+Experiments about hierarchical attention in the sub folder phase_02
+
+Running the basic scripts populates a whole bunch of folders ( one for each patient )
